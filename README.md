@@ -1,6 +1,20 @@
-# PKMNFrames-Facebook
-Python bot for Facebook
+# Pokemon FrameBot
+Every Pokemon Frame in Order Facebook Bot
+https://www.facebook.com/pokeFrames
 
-Based off my other bot for Twitter
+Parts modified from spacebruce's Monogatari bot
 
-To use srt files for captions frames need to be named in milliseconds by ffmpeg
+Disclamer: I'm not a python developer I don't know what I'm doing... Most of this was created with the help of ChatGPT...
+
+Features include:
+  
+  • Option to read a subtitle file and add the correct caption to the tweet
+  To use srt files for captions frames need to be named in milliseconds by ffmpeg
+  
+  • Option for Discord error reporting and end of episode messages
+  
+  • Option to not connect to Facebook for testing
+  
+  • groups of posts with variable delay
+
+
