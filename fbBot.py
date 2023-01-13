@@ -61,10 +61,13 @@ webhook = Webhook.partial(webhookid, token, adapter=RequestsWebhookAdapter())
 subtitled = input('Does this episode have an external subtitle file (y/n)? ')
 if subtitled.lower() == 'y':
     subs = pysrt.open(f"{source_dir}{episode_name}{sub_type}") # Full location of the subtitle file
+    print(f"Subtitle file: {source_dir}{episode_name}{sub_type} loaded")
 else:
     subs = ""
   
-
+# Confirmation to start   
+print(post_text)
+input("Press any key to start")
 
 # Initialize a counter variable to track how many frames of a group have been posted
 counter = 0
