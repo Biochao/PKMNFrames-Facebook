@@ -1,25 +1,54 @@
 import pysrt
 from pysrt.srttime import SubRipTime
-import facebook
+import requests
 import discord
 from discord import Webhook, RequestsWebhookAdapter, File
 import os
-import logging
+import sys
 import time
 import datetime
 
-logging.basicConfig(filename='errors.log', level=logging.ERROR)
+# Facebook page config
+connect_to_facebook = input('Do you want to connect to facebook (y/n)? ')
+# Replace ACCESS_TOKEN with your Page Access Token
+access_token="ACCESS_TOKEN"
+
+page_id = PAGE_ID # Replace PAGE_ID with the ID of your Facebook page
+
+# Test credentials
+if connect_to_facebook.lower() == 'y':
+    try:
+        url = f"https://graph.facebook.com/{page_id}"
+        params = {
+            "access_token": access_token,
+            "fields": "name"
+        }
+        response = requests.get(url, params=params)
+        page_name = response.json()["name"]
+        print(f"Connected to Facebook page {page_name}")
+    except:
+        print("facebook not OK, try again in 60 seconds")
+        for e in sys.exc_info():
+            print(e)
+        time.sleep(60)
+
+# Error Notifications?
+connect_to_discord = input('Do you want to report to Discord (y/n)? ')
+# Discord Error Reporting
+webhookid = WEBOOK_ID
+token = "YOUR_DISCORD_TOKEN"
+webhook = Webhook.partial(webhookid, token, adapter=RequestsWebhookAdapter())
 
 # Post Config
 season_num = 1
-episode_num = 1
-post_text = f"Pokemon Season {season_num} Episode {episode_num} - Pokemon - I Choose You!"
+episode_num = 2
+post_text = f"Pokemon Season {season_num} Episode {episode_num} - Pokemon Emergency!"
 pokemon = ""
-episode_name = "Pokemon-1x01-Pokemon-IChooseYou!" # Name of subtitle file
+episode_name = "Pokemon-1x02-PokemonEmergency!" # Name of subtitle file
 # Timing Config
-delay = 10 # Seconds inbetween each post
-wait_time = 1800 # Seconds after a group of posts
-group = 13 # How many posts per group
+delay = 30 # Seconds inbetween each post
+wait_time = 3600 # Seconds after a group of posts
+group = 18 # How many posts per group
 
 # Path Config
 frame_dir = r"C:/Users/framebot/bots/pokemonFrames/"
@@ -31,32 +60,7 @@ print(f"Image folder: {sub_frames} loaded")
 # Subtitle Config
 source_dir = "C:/Users/framebot/bots/sources/Season 01/"
 sub_type = ".srt" # Format of subtitles
-
-# Facebook page config
-connect_to_facebook = input('Do you want to connect to facebook (y/n)? ')
-# Replace ACCESS_TOKEN with your Page Access Token
-graph = facebook.GraphAPI(access_token="YOUR_ACCESS_TOKEN_HERE")
-
-page_id = 116986881273972 # Replace PAGE_ID with the ID of your Facebook page
-
-# Test credentials
-if connect_to_facebook.lower() == 'y':
-    page = graph.get_object(id=page_id, fields='name')
-    try:
-        print(f"Connected to Facebook page {page['name']}")
-    except facebook.GraphAPIError as e:
-        logging.exception(e)
-        print("facebook not OK, try again in 30 seconds")
-        time.sleep(30)
   
-# Error Notifications?
-connect_to_discord = input('Do you want to report to Discord (y/n)? ')
-  
-# Discord Error Reporting
-webhookid = 123456789
-token = "DISCORD_TOKEN"
-webhook = Webhook.partial(webhookid, token, adapter=RequestsWebhookAdapter())
-
 # Use a subtitle file?
 subtitled = input('Does this episode have an external subtitle file (y/n)? ')
 if subtitled.lower() == 'y':
@@ -64,14 +68,13 @@ if subtitled.lower() == 'y':
     print(f"Subtitle file: {source_dir}{episode_name}{sub_type} loaded")
 else:
     subs = ""
-  
+
 # Confirmation to start   
 print(post_text)
-input("Press any key to start")
-
+input("Press enter to start")
+  
 # Initialize a counter variable to track how many frames of a group have been posted
 counter = 0
-Now = datetime.datetime.now()
 
 # Load the index from a file (or initialize it to 0 if the file doesn't exist)
 index_file = "progress.txt"
@@ -92,23 +95,29 @@ ListLength = len(os.listdir(sub_frames))
 print(ListLength, "files found")
 
 # Report how long this episode will run for
-# Calculate the time length in seconds
 time_length_seconds = (ListLength - index) * wait_time / group
-
-# Create a timedelta object to represent the time length
 time_length = datetime.timedelta(seconds = time_length_seconds)
-
-# Convert the time length to hours
 time_length_hours = time_length.total_seconds() / 3600
-
-# Calculate the end time by adding the time length to the current time
 endtime = datetime.datetime.now() + time_length
-
 print(f"Running for {time_length_hours} hours")
 print(f"EndTime: {endtime}")
 if connect_to_discord.lower() == 'y':
     webhook.send(f"Running until {endtime}")
     
+def make_post():
+    # URL format and fields are according to facebook's API documentation
+    # Since no API version is explicitly given in the link, requests will always use the latest API version
+    url = (
+        f"https://graph.facebook.com/{page_id}/photos?"
+        f"caption={Status}&access_token={access_token}"
+    )
+    files = {
+        'image': open(file_path, "rb")
+    }
+    # Send http POST request to /page-id/photos to make the post
+    response = requests.post(url, files=files)
+    return response.json()
+
 # post each image in the folder starting from the saved index
 for i, file in enumerate(os.listdir(sub_frames)):
     # Check if the file is an image
@@ -134,26 +143,30 @@ for i, file in enumerate(os.listdir(sub_frames)):
         
         retries = 0
         success = False
-        while not success and retries < 10:
+        while not success and retries < 5:
             try:
                 # post the image to Facebook
                 if connect_to_facebook.lower() == 'y':
-                        image = open(file_path, 'rb')
-                        graph.put_photo(image=image, message=Status)
+                    print(f"Time before post: {datetime.datetime.now()}")
+                    post_response = make_post()
+                    print(f"---> Post done! Time: {datetime.datetime.now()}")
+                    print(f"Post response: {post_response}")
                 else:
                     print(f"Processing file {file}")
                 success = True
             except:
                 print(f'Error while posting image {file}')
+                for e in sys.exc_info():
+                    print(e)
                 retries += 1
-                print('Trying again in 30 seconds.')
-                if connect_to_discord.lower() == 'y':
-                    webhook.send(f"facebook Bot encountered an error and is trying again")
-                time.sleep(30)
+                print('Trying again in 3 minutes.')
+                time.sleep(60*3)
         if not success:
             print(f'Failed to post image {file} after {retries} attempts')
+            for e in sys.exc_info():
+                                print(e)
             if connect_to_discord.lower() == 'y':
-                webhook.send(f"facebook Bot failed to post image {file} after {retries} attempts")
+                webhook.send(f"facebook Bot failed to post image {file} after {retries} attempts. Cause: {e}")
             # Wait for user input before exiting
             input("Too many errors. Press Enter to restart...")
         
