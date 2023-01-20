@@ -2,7 +2,7 @@
 Every Pokemon Frame in Order Facebook Bot
 https://www.facebook.com/pokeFrames
 
-Parts modified from spacebruce's Monogatari bot
+Parts modified from spacebruce's Monogatari bot and YAFOT-Facebook bot
 
 Disclamer: I'm not a python developer I don't know what I'm doing... Most of this was created with the help of ChatGPT... If you think you can make this bot better feel free to make a pull request.
 
