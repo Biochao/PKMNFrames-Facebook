@@ -8,7 +8,7 @@ Disclamer: I'm not a python developer I don't know what I'm doing... Most of thi
 
 Features include:
   
-  • Option to read a subtitle file and add the correct caption to the tweet
+  • Option to read a subtitle file and add the correct caption to the post
   To use srt files for captions frames need to be named in milliseconds by ffmpeg
   
   • Option for Discord error reporting and end of episode messages
