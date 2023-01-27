@@ -95,7 +95,7 @@ ListLength = len(os.listdir(sub_frames))
 print(ListLength, "files found")
 
 # Report how long this episode will run for
-time_length_seconds = (ListLength - index) * wait_time / group
+time_length_seconds = (ListLength - index) * (wait_time + (group * (delay + 4))) / group
 time_length = datetime.timedelta(seconds = time_length_seconds)
 time_length_hours = time_length.total_seconds() / 3600
 endtime = datetime.datetime.now() + time_length
